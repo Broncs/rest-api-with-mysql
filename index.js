@@ -40,37 +40,34 @@ let userList = [
 ];
 
 app.get('/users', (req, res) => {
-  res.status(200).json(userList);
+  db.query('SELECT * FROM users', (err, result) => {
+    if (err) {
+      res.status(400).json(err);
+    } else {
+      res.status(200).json(result);
+    }
+  });
 });
 
 app.post('/users', (req, res) => {
-  const newUser = req.body;
-  userList.push(newUser);
-  res.json(userList);
+  const { name, age, married } = req.body;
+  db.query(
+    'INSERT INTO users (name, age, married) VALUES (?,?,?)',
+    [name, age, married],
+    (err, result) => {
+      if (err) {
+        res.status(400).json(err);
+      } else {
+        res.status(200).json(`user added ! `);
+      }
+    }
+  );
 });
 
-app.put('/users', (req, res) => {
-  const { newName } = req.body;
-  const newUsers = userList.map((user) => {
-    return { ...user, name: newName };
-  });
-  res.json(newUsers);
-});
+app.put('/users', (req, res) => {});
 
 app.delete('/users/:id', (req, res) => {
   const { id } = req.params;
-
-  const found = userList.find((user) => user.id === Number(id));
-
-  if (!found) {
-    return res
-      .status(400)
-      .json({ success: false, msg: `User with id ${id} was not found` });
-  }
-
-  const newList = userList.filter((user) => user.id !== Number(id));
-
-  res.json(newList);
 });
 
 app.listen(3001, () => console.log('server is running on port : 3000'));
